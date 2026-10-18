@@ -1,0 +1,40 @@
+{
+  "_note": "Example endpoints. authorized_level values are PLACEHOLDERS: set each one from the agency's ATO and the service's actual authorization. The gateway enforces whatever you put here.",
+  "default": "offline",
+  "endpoints": [
+    {
+      "name": "offline",
+      "kind": "offline",
+      "authorized_level": "CUI",
+      "description": "Deterministic local rules. No network. Works air-gapped."
+    },
+    {
+      "name": "commercial-cloud",
+      "kind": "openai",
+      "base_url": "https://api.openai.com/v1",
+      "model": "gpt-5",
+      "api_key_env": "OPENAI_API_KEY",
+      "authorized_level": "PUBLIC",
+      "description": "OpenAI API. Authorized here for public content only, as an example of a lower-impact boundary."
+    },
+    {
+      "name": "gov-cloud",
+      "kind": "azure",
+      "base_url": "https://YOUR-RESOURCE.openai.azure.us",
+      "deployment": "YOUR-DEPLOYMENT",
+      "api_version": "2024-10-21",
+      "api_key_env": "AZURE_OPENAI_API_KEY",
+      "authorized_level": "CUI",
+      "description": "Azure OpenAI in a government cloud region, inside the agency's authorization boundary."
+    },
+    {
+      "name": "on-prem",
+      "kind": "openai",
+      "base_url": "http://llm.internal.example:8000/v1",
+      "model": "YOUR-MODEL",
+      "api_key_env": "ONPREM_LLM_KEY",
+      "authorized_level": "CUI",
+      "description": "Any OpenAI-compatible server on the agency network (e.g. an inference server in an enclave)."
+    }
+  ]
+}

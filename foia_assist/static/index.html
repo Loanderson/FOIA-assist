@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FOIA Intake Assistant</title>
+<style>
+  :root {
+    --bg: #f5f4f0; --panel: #ffffff; --ink: #1c1f24; --muted: #5d6470; --line: #dcd9d1;
+    --accent: #1f4e79; --accent-ink: #ffffff;
+    --public: #2e6b3a; --internal: #1f4e79; --cui: #502b85;
+    --flag-bg: #fff4d6; --flag-ink: #6b4b00; --redact: #1c1f24;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #15171b; --panel: #1d2026; --ink: #e8e6e1; --muted: #9aa1ad; --line: #30343c;
+            --accent: #6aa4d8; --accent-ink: #0d1117; --flag-bg: #3a2f12; --flag-ink: #f2d27a; --redact: #e8e6e1; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); }
+  .banner { text-align: center; color: #fff; font: 600 12px/1 var(--sans); letter-spacing: .12em;
+            padding: 6px 16px; background: var(--public); text-transform: uppercase; }
+  .banner[data-level="INTERNAL"] { background: var(--internal); }
+  .banner[data-level="CUI"] { background: var(--cui); }
+  header { max-width: 1080px; margin: 0 auto; padding: 24px 16px 8px; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -.01em; }
+  .sub { color: var(--muted); margin: 0; }
+  main { max-width: 1080px; margin: 0 auto; padding: 8px 16px 48px; display: grid; gap: 16px;
+         grid-template-columns: minmax(0, 360px) minmax(0, 1fr); align-items: start; }
+  @media (max-width: 820px) { main { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  label { display: block; font-weight: 600; font-size: 13px; margin: 12px 0 6px; }
+  label:first-child { margin-top: 0; }
+  textarea, select { width: 100%; font: inherit; color: var(--ink); background: var(--bg);
+                     border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+  textarea { min-height: 130px; resize: vertical; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  button { margin-top: 14px; width: 100%; padding: 11px; font: 600 15px var(--sans); border: 0; border-radius: 8px;
+           background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+  .examples { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .examples button { width: auto; margin: 0; padding: 5px 9px; font-size: 12px; font-weight: 500;
+                     background: transparent; color: var(--accent); border: 1px solid var(--line); }
+  .empty { color: var(--muted); text-align: center; padding: 48px 16px; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .fact { border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+  .fact b { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+  .fact span { font-weight: 600; }
+  .alert { background: var(--flag-bg); color: var(--flag-ink); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; }
+  .rec { border-top: 1px solid var(--line); padding: 14px 0; }
+  .rec:first-of-type { border-top: 0; }
+  .rec-head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .rec-id { font: 600 13px var(--mono); }
+  .rec-title { font-weight: 600; }
+  .mark { font: 600 11px var(--sans); letter-spacing: .05em; padding: 2px 6px; border-radius: 4px; color: #fff; }
+  .mark.PUBLIC { background: var(--public); } .mark.INTERNAL { background: var(--internal); } .mark.CUI { background: var(--cui); }
+  .meta { color: var(--muted); font-size: 13px; }
+  .flags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .flag { background: var(--flag-bg); color: var(--flag-ink); font-size: 12px; border-radius: 4px; padding: 2px 7px; }
+  .note { font-size: 14px; margin: 6px 0; }
+  .note i { color: var(--muted); font-style: normal; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; margin-right: 6px; }
+  details { margin-top: 6px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 13px; }
+  pre { white-space: pre-wrap; font: 13px/1.5 var(--mono); background: var(--bg); border: 1px solid var(--line);
+        border-radius: 8px; padding: 10px; margin: 8px 0 0; }
+  .x { background: var(--redact); color: var(--redact); border-radius: 2px; }
+  .x::after { content: attr(data-code); color: var(--panel); font-size: 11px; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="banner" id="banner" data-level="PUBLIC">No records loaded</div>
+<header>
+  <h1>FOIA Intake Assistant</h1>
+  <p class="sub">Federal Grants Administration (fictional) · Drafts for FOIA officer review. Nothing here is a release decision.</p>
+</header>
+<main>
+  <section class="panel" aria-label="New request">
+    <form id="form">
+      <label for="req">Request text</label>
+      <textarea id="req" required placeholder="Paste the requester's letter or email"></textarea>
+      <label for="rtype">Requester category</label>
+      <select id="rtype">
+        <option value="media">News media</option>
+        <option value="educational">Educational or scientific</option>
+        <option value="commercial">Commercial use</option>
+        <option value="other" selected>All other</option>
+      </select>
+      <label for="ep">Model endpoint</label>
+      <select id="ep"></select>
+      <div class="hint" id="ephint"></div>
+      <button id="go" type="submit">Build case packet</button>
+    </form>
+    <div class="examples" id="examples"></div>
+  </section>
+  <section class="panel" aria-live="polite" id="out">
+    <div class="empty">Enter a request to see triage, candidate records, exemption flags and a draft acknowledgment.</div>
+  </section>
+</main>
+<script>
+const $ = (s) => document.querySelector(s);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+const EXAMPLES = [
+  "All records about rural broadband grant awards in 2025, including how selections were made.",
+  "Any audit or investigation of improper payments in the broadband program.",
+  "Records of complaints about rejected water applications in 2025.",
+  "I want all emails.",
+];
+let endpoints = [];
+
+fetch("/api/endpoints").then(r => r.json()).then(d => {
+  endpoints = d.endpoints;
+  for (const e of endpoints) {
+    const o = el("option", null, `${e.name} — up to ${e.authorized_level}`);
+    o.value = e.name; if (e.name === d.default) o.selected = true; $("#ep").append(o);
+  }
+  hint();
+});
+function hint() { const e = endpoints.find(x => x.name === $("#ep").value); $("#ephint").textContent = e ? e.description : ""; }
+$("#ep").addEventListener("change", hint);
+for (const ex of EXAMPLES) {
+  const b = el("button", null, ex.length > 44 ? ex.slice(0, 42) + "…" : ex);
+  b.type = "button"; b.title = ex; b.onclick = () => { $("#req").value = ex; };
+  $("#examples").append(b);
+}
+
+function redacted(text, flags) {
+  // Render redaction preview from [b(x)] markers using DOM nodes only.
+  const frag = document.createDocumentFragment();
+  const re = /\[(b\(\d\)(?:\([A-Z]\))?)\]/g; let last = 0, m;
+  while ((m = re.exec(text))) {
+    frag.append(text.slice(last, m.index));
+    const s = el("span", "x"); s.dataset.code = m[1]; s.setAttribute("aria-label", "redacted " + m[1]);
+    frag.append(s); last = m.index + m[0].length;
+  }
+  frag.append(text.slice(last)); return frag;
+}
+
+function render(p) {
+  const out = $("#out"); out.replaceChildren();
+  const level = p.candidates.length ? p.summary.highest_marking : "PUBLIC";
+  $("#banner").dataset.level = level;
+  $("#banner").textContent = p.candidates.length ? `Highest handling level on this page: ${level}` : "No records on this page";
+
+  const t = p.triage, facts = el("div", "facts");
+  const fact = (k, v) => { const f = el("div", "fact"); f.append(el("b", null, k), el("span", null, v)); facts.append(f); };
+  fact("Request", p.request_id); fact("Track", t.track); fact("Fee category", p.fee_category);
+  fact("Records dated", t.start_year ? `${t.start_year}–${t.end_year}` : "any");
+  fact("Endpoint", `${p.endpoint.name} (≤ ${p.endpoint.authorized_level})`);
+  out.append(facts);
+
+  if (t.needs_clarification) out.append(el("div", "alert", "Needs clarification before searching: " + t.clarification_question));
+  if (p.summary.withheld_from_model) out.append(el("div", "alert",
+    `${p.summary.withheld_from_model} record(s) were not sent to the model because their handling level exceeds this endpoint's authorization.`));
+
+  for (const c of p.candidates) {
+    const r = el("div", "rec"), h = el("div", "rec-head");
+    h.append(el("span", "rec-id", c.id), el("span", "mark " + c.marking, c.marking), el("span", "rec-title", c.title));
+    r.append(h, el("div", "meta", `${c.date} · ${c.office} · ${c.status} · score ${c.score} · matched ${c.matched_terms.join(", ")}`));
+    const fl = el("div", "flags");
+    const seen = new Set();
+    for (const f of c.flags) { const k = f.exemption + f.reason; if (seen.has(k)) continue; seen.add(k); fl.append(el("span", "flag", `${f.exemption}: ${f.reason}`)); }
+    if (c.flags.length) r.append(fl);
+    const note = el("div", "note"); note.append(el("i", null, c.note_source));
+    note.append(typeof c.note === "string" ? c.note : `${c.note.responsive} — ${c.note.reason}`);
+    r.append(note);
+    const d = el("details"); d.append(el("summary", null, "Redaction preview")); const pre = el("pre");
+    pre.append(redacted(c.redaction_preview)); d.append(pre); r.append(d);
+    out.append(r);
+  }
+  const d = el("details"); d.open = !p.candidates.length;
+  d.append(el("summary", null, "Draft acknowledgment letter"), el("pre", null, p.acknowledgment_letter));
+  out.append(d, el("footer", null, p.notice));
+}
+
+$("#form").addEventListener("submit", async (e) => {
+  e.preventDefault(); const btn = $("#go"); btn.disabled = true; btn.textContent = "Working…";
+  try {
+    const r = await fetch("/api/process", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ request: $("#req").value, requester_type: $("#rtype").value, endpoint: $("#ep").value }) });
+    const d = await r.json();
+    if (!r.ok) { $("#out").replaceChildren(el("div", "alert", d.error || "Request failed")); return; }
+    render(d);
+  } catch (err) { $("#out").replaceChildren(el("div", "alert", String(err))); }
+  finally { btn.disabled = false; btn.textContent = "Build case packet"; }
+});
+</script>
+</body>
+</html>

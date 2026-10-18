@@ -1,0 +1,14 @@
+[
+  {"id": "Q01", "requester_type": "media", "text": "All records about rural broadband grant awards in 2025, including how selections were made.", "responsive": ["FGA-001", "FGA-016"], "track": "complex", "programs": ["Rural Broadband"], "needs_clarification": false},
+  {"id": "Q02", "requester_type": "educational", "text": "The 2025 notice of funding opportunity for the water infrastructure program.", "responsive": ["FGA-013"], "track": "simple", "programs": ["Water Infrastructure"], "needs_clarification": false},
+  {"id": "Q03", "requester_type": "media", "text": "Any audit or investigation of improper payments in the broadband program.", "responsive": ["FGA-005"], "track": "complex", "programs": ["Rural Broadband"], "needs_clarification": false},
+  {"id": "Q04", "requester_type": "other", "text": "Records showing how the agency decided to change the cost-share match requirement in 2025.", "responsive": ["FGA-006", "FGA-007"], "track": "simple", "programs": [], "needs_clarification": false},
+  {"id": "Q05", "requester_type": "media", "text": "Documents about the phishing attack on the grants portal in May 2025.", "responsive": ["FGA-012"], "track": "complex", "programs": [], "needs_clarification": false},
+  {"id": "Q06", "requester_type": "commercial", "text": "The contract for modernizing the grants management portal.", "responsive": ["FGA-010"], "track": "simple", "programs": [], "needs_clarification": false},
+  {"id": "Q07", "requester_type": "media", "text": "The Administrator's travel schedule for spring 2025.", "responsive": ["FGA-011"], "track": "simple", "programs": [], "needs_clarification": false},
+  {"id": "Q08", "requester_type": "other", "text": "I want all emails.", "responsive": [], "track": "complex", "programs": [], "needs_clarification": true},
+  {"id": "Q09", "requester_type": "media", "text": "Communications with the FCC about broadband maps since 2024.", "responsive": ["FGA-015"], "track": "complex", "programs": ["Rural Broadband"], "needs_clarification": false},
+  {"id": "Q10", "requester_type": "other", "text": "The water infrastructure budget request for fiscal year 2026.", "responsive": ["FGA-014"], "track": "simple", "programs": ["Water Infrastructure"], "needs_clarification": false},
+  {"id": "Q11", "requester_type": "other", "text": "Records of complaints about rejected water applications in 2025.", "responsive": ["FGA-008"], "track": "simple", "programs": ["Water Infrastructure"], "needs_clarification": false},
+  {"id": "Q12", "requester_type": "educational", "text": "The annual performance report for fiscal year 2024.", "responsive": ["FGA-009"], "track": "simple", "programs": [], "needs_clarification": false}
+]
